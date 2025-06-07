@@ -1,0 +1,36 @@
+# Docker files
+docker-compose.yml
+docker-compose.override.yml
+Dockerfile
+
+# Environment files
+.env
+
+# Local data
+mysql-data/
+
+# Node modules and dependencies
+node_modules/
+
+# React application
+react/build/
+react/node_modules/
+
+# WebSocket server
+websocket/build/
+websocket/node_modules/
+
+# Valkey
+valkey/data/
+
+# PHPMyAdmin
+phpmyadmin/data/
+
+# Log files
+logs/
+*.log
+
+# System files
+*.tmp
+*.swp
+*.swo

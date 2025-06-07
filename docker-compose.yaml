@@ -1,0 +1,65 @@
+services:
+  react:
+    build: ./frontend
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./frontend:/app
+    networks:
+      - internal
+
+  websocket-server:
+    build: ./websocket-server
+    ports:
+      - "8081:8081"
+    volumes:
+      - ./websocket-server:/app
+    networks:
+      - internal
+    command: go run -ldflags="-s -w" main.go
+    restart: always
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    ports:
+      - "8080:80"
+    environment:
+      - PMA_HOST=mysql
+      - PMA_USER=root
+      - PMA_PASSWORD=password
+    networks:
+      - internal
+    restart: always
+
+  mysql:
+    image: mysql:8.0
+    environment:
+      - MYSQL_ROOT_PASSWORD=password
+      - MYSQL_DATABASE=mydb
+      - MYSQL_USER=myuser
+      - MYSQL_PASSWORD=mypassword
+    volumes:
+      - ./local/data/mysql:/var/lib/mysql
+    networks:
+      - internal
+    restart: always
+
+  nginx:
+    build: ./local/nginx
+    ports:
+      - "80:80"
+    depends_on:
+      - react
+      - websocket-server
+      - phpmyadmin
+    networks:
+      - internal
+      - external
+
+networks:
+  internal:
+    driver: bridge
+    internal: true
+  external:
+    driver: bridge
+
