@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	"net/http"
 
@@ -16,33 +15,68 @@ var upgrader = websocket.Upgrader{
 	},
 }
 
-func handleWebSocket(w http.ResponseWriter, r *http.Request) {
-	conn, err := upgrader.Upgrade(w, r, nil)
-	if err != nil {
-		log.Println("Failed to upgrade to WebSocket:", err)
-		return
+type ClientManager struct {
+	clients   map[*websocket.Conn]struct{}
+	broadcast chan []byte
+}
+
+func NewClientManager() *ClientManager {
+	manager := &ClientManager{
+		clients:   make(map[*websocket.Conn]struct{}),
+		broadcast: make(chan []byte),
 	}
-	defer conn.Close()
 
+	go manager.run()
+	return manager
+}
+
+func (manager *ClientManager) run() {
 	for {
-		messageType, p, err := conn.ReadMessage()
-		if err != nil {
-			log.Println("Failed to read message:", err)
-			return
-		}
-
-		fmt.Printf("Received: %s\n", p)
-
-		if err := conn.WriteMessage(messageType, p); err != nil {
-			log.Println("Failed to write message:", err)
-			return
+		select {
+		case message := <-manager.broadcast:
+			for client := range manager.clients {
+				if err := client.WriteMessage(websocket.TextMessage, message); err != nil {
+					log.Println("Error broadcasting message:", err)
+				}
+			}
 		}
 	}
 }
 
-func main() {
-	http.HandleFunc("/", handleWebSocket)
+func (manager *ClientManager) handleConnections(w http.ResponseWriter, r *http.Request) {
+	ws, err := upgrader.Upgrade(w, r, nil)
+	if err != nil {
+		log.Panic("Upgrade failed:", err)
+		http.Error(w, "WebSocket upgrade failed, try to use websocat", http.StatusBadRequest)
+		return
+	}
+	defer ws.Close()
 
-	fmt.Println("WebSocket server is running on :8081")
-	log.Fatal(http.ListenAndServe(":8081", nil))
+	manager.clients[ws] = struct{}{}
+
+	for {
+		_, message, err := ws.ReadMessage()
+		if err != nil {
+			log.Panic(err)
+			break
+		}
+		log.Printf("Received: %s", message)
+
+		answer := "{\"action\":\"voters\",\"voters\":[{\"userName\":\"waiting\"}]}"
+
+		manager.broadcast <- []byte(answer)
+	}
+
+	delete(manager.clients, ws)
+}
+
+func main() {
+	manager := NewClientManager()
+
+	http.HandleFunc("/", manager.handleConnections)
+	log.Println("http server started on :8081")
+	err := http.ListenAndServe(":8081", nil)
+	if err != nil {
+		log.Fatal("ListenAndServe: ", err)
+	}
 }
