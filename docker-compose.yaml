@@ -22,11 +22,11 @@ services:
   phpmyadmin:
     image: phpmyadmin/phpmyadmin
     ports:
-      - "8080:80"
+      - "80:80" 
     environment:
       - PMA_HOST=mysql
       - PMA_USER=root
-      - PMA_PASSWORD=password
+      - PMA_PASSWORD=${MYSQL_ROOT_PASSWORD}
     networks:
       - internal
     restart: always
@@ -34,10 +34,10 @@ services:
   mysql:
     image: mysql:8.0
     environment:
-      - MYSQL_ROOT_PASSWORD=password
-      - MYSQL_DATABASE=mydb
-      - MYSQL_USER=myuser
-      - MYSQL_PASSWORD=mypassword
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+      - MYSQL_DATABASE=${MYSQL_DATABASE}
+      - MYSQL_USER=${MYSQL_USER}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
     volumes:
       - ./local/data/mysql:/var/lib/mysql
     networks:
@@ -55,6 +55,21 @@ services:
     networks:
       - internal
       - external
+
+  flyway:
+    image: flyway/flyway:11.9-alpine-mongo
+    environment:
+      FLYWAY_URL: jdbc:mysql://mysql:3306/${MYSQL_DATABASE}
+      FLYWAY_USER: root
+      FLYWAY_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+    volumes:
+      - ./sql:/flyway/sql
+    depends_on:
+      - mysql
+    command: flyway migrate
+    networks:
+      - internal
+    
 
 networks:
   internal:

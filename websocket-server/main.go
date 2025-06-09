@@ -62,7 +62,11 @@ func (manager *ClientManager) handleConnections(w http.ResponseWriter, r *http.R
 		}
 		log.Printf("Received: %s", message)
 
-		answer := "{\"action\":\"voters\",\"voters\":[{\"userName\":\"waiting\"}]}"
+		answer := "{\"action\":\"voters\",\"voters\":[{\"username\":\"user\", \"vote\": \"waiting\"}]}"
+
+		manager.broadcast <- []byte(answer)
+
+		answer = "{\"action\":\"deck\",\"deck\":[1,2,5,10], \"allowCustom\": \"true\"}"
 
 		manager.broadcast <- []byte(answer)
 	}
