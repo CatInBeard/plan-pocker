@@ -1,0 +1,40 @@
+.card {
+  margin: 5px;
+  min-height: 120px;
+  background-color: lightgray;
+  padding: 10px;
+  border-radius: 10px;
+  text-align: center;
+  width: 80px;
+  box-sizing: border-box;
+  word-break: break-word;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 30px;
+  cursor: pointer;
+}
+
+.cardCustom {
+  margin: 5px;
+  min-height: 120px;
+  background-color: lightgray;
+  padding: 10px;
+  border-radius: 10px;
+  text-align: center;
+  width: 80px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  font-size: 20px;
+}
+
+.selected{
+  background-color: lightgreen !important;
+}
+
+.cardInput {
+  border-radius: 10px;
+  width: 100%;
+}
