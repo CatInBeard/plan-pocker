@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import './PlayerTable.css';
 
-const PlayerTable = ({ voters,revealedValue, revealAction }) => {
+const PlayerTable = ({ voters,revealedValue, revealAction, startNewAction }) => {
     const [averageCardValue, setAverageCardValue] = useState(null);
     const [playerPositions, setPlayerPositions] = useState({});
     const tableRef = useRef(null);
@@ -54,9 +54,12 @@ const PlayerTable = ({ voters,revealedValue, revealAction }) => {
     return (
         <div className="poker-table" ref={tableRef}>
             <div className="table-center">
-                <button className="show-all-cards-button" onClick={revealAction}>
+                {revealedValue === null && (<button className="show-all-cards-button" onClick={revealAction}>
                     Reveal
-                </button>
+                </button> )}
+                {revealedValue !== null && (<button className="start-new-game-button" onClick={startNewAction}>
+                    Start new game
+                </button> )}
                 {revealedValue !== null && (
                     <p className="average-card-value">Average: {revealedValue}</p>
                 )}

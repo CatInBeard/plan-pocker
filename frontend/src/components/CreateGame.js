@@ -50,7 +50,7 @@ const CreateGame = () => {
             </div>
         </div>
 
-    { seconds ? <Popup header={"New game created!"} text={<p><h1><i className="bi bi-clipboard-check"></i></h1>{"Link copied to clipboard, you will be redirected in " + seconds + " seconds or click "} <a href={url}>here</a> </p>}/> : <></> }
+    { seconds ? <Popup header={"New game created!"}><p><h1><i className="bi bi-clipboard-check"></i></h1>{"Link copied to clipboard, you will be redirected in " + seconds + " seconds or click "} <a href={url}>here</a> </p></Popup> : <></> }
 
     </div>
 

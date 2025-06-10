@@ -1,10 +1,11 @@
 import "./Popup.css"
 
-const Popup = ({header, text}) => {
+const Popup = ({header, children}) => {
     return <div className="popup-wrapper pt-5">
     <div className="popup-content container-sm">
-      <h4>{header}</h4>
-      <p>{text}</p>
+      {header && <><h4>{header}</h4>
+      <hr/></>}
+      {children}
     </div>
   </div>
 }

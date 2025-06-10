@@ -6,6 +6,7 @@ import WsClient from "../Websocket/WsClient";
 import CardPicker from "./CardPicker";
 import Settings from "./Settings";
 import style from "./Game.module.css"
+import { v4 as uuidv4 } from 'uuid';
 
 import { useState, useEffect, useRef } from 'react';
 
@@ -18,12 +19,19 @@ const Game = ({ id }) => {
     const [allowCustomDeck, setAllowCustomDeck] = useState(false)
     const [revealedValue, setRevealedValue] = useState(null)
     const [showSettings, setShowSettings] = useState(false)
+    const [uid, setUid] = useState(null);
 
     const openSettings = () => {
         setShowSettings(true)
     }
 
-    const closeSettings = () => {
+    const setSettings = (deck, isCustomDeckAllowed) => {
+        const message = {
+            action : 'setSettings',
+            deck : deck,
+            isCustomDeckAllowed: isCustomDeckAllowed
+        };
+        wsClient.send(JSON.stringify(message))
         setShowSettings(false)
     }
 
@@ -42,6 +50,12 @@ const Game = ({ id }) => {
                 setDeck(message.deck)
                 setAllowCustomDeck(message.allowCustom)
             break;
+            case "reveal":
+                setRevealedValue(message.value)
+            break;
+            case "replay":
+                setSelectedCard(null)
+            break;
         }
     }
 
@@ -55,6 +69,14 @@ const Game = ({ id }) => {
         const storedValue = localStorage.getItem('userName');
         if (storedValue !== null) {
             setUserName(storedValue);
+        }
+        let uid = localStorage.getItem('uid');
+        if (uid !== null) {
+            setUid(uid);
+        } else {
+            uid = uuidv4();
+            setUid(uid);
+            localStorage.setItem('uid', uid);
         }
     };
 
@@ -89,6 +111,7 @@ const Game = ({ id }) => {
         const sendMessage = () => {
             const message = {
             userName: userName,
+            uid: uid,
             action: 'connected',
             };
             wsClient.send(JSON.stringify(message))
@@ -122,6 +145,12 @@ const Game = ({ id }) => {
         );
     }
 
+    const startNewAction = () => {
+        wsClient.send(
+            JSON.stringify({"action": "replay"})
+        );
+    }
+
     const pickCB = (pick) => {
         setSelectedCard(pick)
     }
@@ -133,8 +162,8 @@ const Game = ({ id }) => {
             </div>
         </Header>
         <Container>
-            {showSettings && <Settings/>}
-            <PlayerTable voters={voters} revealedValue={revealedValue} revealAction={revealAction}/>
+            {showSettings && <Settings deck={deck} allowCustomDeck={allowCustomDeck} setSettings={setSettings} />}
+            <PlayerTable voters={voters} revealedValue={revealedValue} revealAction={revealAction} startNewAction={startNewAction} />
             <CardPicker availableCards={deck} allowCustom={allowCustomDeck} selectCallback={pickCB} selectedCard={selectedCard} />
         </Container>
     </>
