@@ -27,6 +27,7 @@ const Game = ({ id }) => {
 
     const setSettings = (deck, isCustomDeckAllowed) => {
         const message = {
+            gameId: id,
             action : 'setSettings',
             deck : deck,
             isCustomDeckAllowed: isCustomDeckAllowed
@@ -112,6 +113,7 @@ const Game = ({ id }) => {
             const message = {
             userName: userName,
             uid: uid,
+            gameId: id,
             action: 'connected',
             };
             wsClient.send(JSON.stringify(message))
@@ -141,13 +143,23 @@ const Game = ({ id }) => {
 
     const revealAction = () => {
         wsClient.send(
-            JSON.stringify({"action": "reveal"})
+            JSON.stringify(
+                {
+                    action: "reveal",
+                    gameId: id,
+                }
+            )
         );
     }
 
     const startNewAction = () => {
         wsClient.send(
-            JSON.stringify({"action": "replay"})
+            JSON.stringify(
+                {
+                    action: "replay",
+                    gameId: id,
+                }
+            )
         );
     }
 
