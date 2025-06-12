@@ -20,6 +20,7 @@ const Game = ({ id }) => {
     const [revealedValue, setRevealedValue] = useState(null)
     const [showSettings, setShowSettings] = useState(false)
     const [uid, setUid] = useState(null);
+    const [selectedCard, setSelectedCard] = useState(null);
 
     const openSettings = () => {
         setShowSettings(true)
@@ -38,8 +39,6 @@ const Game = ({ id }) => {
 
     let [wsClient, setWsClient] = useState(null)
     let [connectionStatus, setConncetionStatus] = useState("Not set")
-
-    let [selectedCard, setSelectedCard] = useState(null);
 
     let onWsMessage = (message) => {
 
@@ -115,6 +114,7 @@ const Game = ({ id }) => {
             uid: uid,
             gameId: id,
             action: 'connected',
+            vote: selectedCard ?? 0
             };
             wsClient.send(JSON.stringify(message))
         };

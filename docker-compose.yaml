@@ -22,10 +22,29 @@ services:
       - internal
     restart: always
     environment:
-    - LOG_LEVEL=DEBUG
-    - FILE_INFO_DEBUG_LEVEL=DEBUG
+    - LOG_LEVEL=${LOG_LEVEL}
+    - FILE_INFO_DEBUG_LEVEL=${FILE_INFO_DEBUG_LEVEL}
     - LOG_DIR=/logs
     - CONTAINER_NAME=websocket-server
+
+  game:
+    build: 
+      context: .
+      dockerfile: ./local/game/Dockerfile
+    ports:
+      - "8082:8082"
+    volumes:
+      - ./game:/app
+      - ./go-shared:/go-shared
+      - ./local/data/logs:/logs
+    networks:
+      - internal
+    restart: always
+    environment:
+    - LOG_LEVEL=${LOG_LEVEL}
+    - FILE_INFO_DEBUG_LEVEL=${FILE_INFO_DEBUG_LEVEL}
+    - LOG_DIR=/logs
+    - CONTAINER_NAME=game
 
   phpmyadmin:
     image: phpmyadmin/phpmyadmin

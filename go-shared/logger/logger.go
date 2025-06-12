@@ -63,7 +63,7 @@ func init() {
 		log.Fatal(err)
 	}
 
-	Logger = log.New(file, "", log.LstdFlags)
+	Logger = log.New(file, "", 0)
 	logChannel = make(chan LogEntry, 100)
 
 	logLevelEnv := os.Getenv("LOG_LEVEL")
