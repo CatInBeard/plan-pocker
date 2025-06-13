@@ -123,17 +123,21 @@ func Log(level LogLevel, header, body string) {
 	}()
 }
 
-func LogFatal() { // Get log data from recovery
+func LogFatal(args ...int) { // Get log data from recovery, ues arg if need additional params
 	if r := recover(); r != nil {
-		_, file, line, ok := runtime.Caller(2)
+		depth := 2
+		if len(args) > 0 {
+			depth = args[0]
+		}
+		_, file, line, ok := runtime.Caller(depth)
 		var entry LogEntry
 		entry.Time = time.Now()
 		entry.Level = FATAL
 		entry.Header = "Panic occurred"
 		if ok {
-			entry.Body = fmt.Sprintf("Recovered from panic: %v\nFile: %s, Line: %d", r, file, line)
+			entry.Body = fmt.Sprintf("Recovered from panic: %+v\nFile: %s, Line: %d", r, file, line)
 		} else {
-			entry.Body = fmt.Sprintf("Recovered from panic: %v", r)
+			entry.Body = fmt.Sprintf("Recovered from panic: %+v", r)
 		}
 		entry.Container = getContainerName()
 

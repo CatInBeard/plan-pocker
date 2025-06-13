@@ -40,21 +40,24 @@ const Game = ({ id }) => {
         setShowSettings(false)
     }
 
+    const selectedCardRef = useRef(selectedCard);
+    useEffect(() => {
+        selectedCardRef.current = selectedCard;
+    }, [selectedCard]);
+
     let onWsMessage = (message) => {
 
         switch(message.action){
             case "voters":
-                setVoters(message.voters)
+                setVoters(message.voters ?? [])
+                setRevealedValue(message.vote)
+                if(message.vote){
+                    setSelectedCard(null)
+                }
             break;
             case "deck":
                 setDeck(message.deck)
                 setAllowCustomDeck(message.allowCustom)
-            break;
-            case "reveal":
-                setRevealedValue(message.value)
-            break;
-            case "replay":
-                setSelectedCard(null)
             break;
         }
     }
@@ -104,19 +107,18 @@ const Game = ({ id }) => {
         };
     })
 
-     useEffect(() => {
+    useEffect(() => {
         let intervalId;
 
         if (connectionStatus === 'established' && userName) {
         const sendMessage = () => {
-            const message = {
+            wsClient.send({
             userName: userName,
             uid: uid,
             gameId: id,
             action: 'connect',
-            vote: selectedCard ?? 0
-            };
-            wsClient.send(message)
+            vote: selectedCardRef.current ?? 0
+            })
         };
 
         sendMessage();

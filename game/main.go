@@ -23,6 +23,12 @@ type ErrorResponse struct {
 }
 
 func handler(w http.ResponseWriter, r *http.Request) {
+	defer func() {
+		logger.LogFatal(3)
+		if r := recover(); r != nil {
+			http.Error(w, jsonError("Failed to complete request"), http.StatusInternalServerError)
+		}
+	}()
 	w.Header().Set("Content-Type", "application/json")
 	requestInfo := httputils.CollectRequestInfoString(r)
 	body, _ := io.ReadAll(r.Body)

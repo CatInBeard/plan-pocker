@@ -21,7 +21,7 @@ func handleConnection(w http.ResponseWriter, req ConnectionRequest) {
 
 	_, err := gameRepository.SelectByShortLink(req.GameID)
 	if err == sql.ErrNoRows {
-		logger.Log(logger.INFO, "[CHI-001] Game with ID "+req.GameID+" not found, creating new gaem", fmt.Sprintf("req: %v", req))
+		logger.Log(logger.INFO, "[CHI-001] Game with ID "+req.GameID+" not found, creating new gaem", fmt.Sprintf("req: %+v", req))
 		gameRepository.CreateDefaultGame(req.GameID)
 	}
 
@@ -32,6 +32,8 @@ func handleConnection(w http.ResponseWriter, req ConnectionRequest) {
 		Vote:   req.Vote,
 		GameId: req.GameID,
 	})
+
+	go CalculateGameStateByGameId(req.GameID)
 
 	response := Response{Message: "ok"}
 	json.NewEncoder(w).Encode(response)

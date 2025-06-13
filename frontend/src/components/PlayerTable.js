@@ -54,13 +54,13 @@ const PlayerTable = ({ voters,revealedValue, revealAction, startNewAction }) => 
     return (
         <div className="poker-table" ref={tableRef}>
             <div className="table-center">
-                {revealedValue === null && (<button className="show-all-cards-button" onClick={revealAction}>
+                {revealedValue == 0 && (<button className="show-all-cards-button" onClick={revealAction}>
                     Reveal
                 </button> )}
-                {revealedValue !== null && (<button className="start-new-game-button" onClick={startNewAction}>
+                {revealedValue != 0 && (<button className="start-new-game-button" onClick={startNewAction}>
                     Start new game
                 </button> )}
-                {revealedValue !== null && (
+                {revealedValue != 0 && (
                     <p className="average-card-value">Average: {revealedValue}</p>
                 )}
             </div>

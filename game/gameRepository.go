@@ -55,7 +55,7 @@ func NewGameRepository() *GameRepository {
 func (r *GameRepository) Create(game Game) error {
 	settingsJSON, err := json.Marshal(game.Settings)
 	if err != nil {
-		logger.Log(logger.ERROR, "[GRM-001] Failed to marshal settings json", fmt.Sprintf("Shortlink: %s, settings: %v, Error: %s", game.Shortlink, game.Settings, err.Error()))
+		logger.Log(logger.ERROR, "[GRM-001] Failed to marshal settings json", fmt.Sprintf("Shortlink: %s, settings: %+v, Error: %s", game.Shortlink, game.Settings, err.Error()))
 		return err
 	}
 
@@ -80,7 +80,7 @@ func (r *GameRepository) Create(game Game) error {
 func (r *GameRepository) CreateOrUpdate(game Game) error {
 	settingsJSON, err := json.Marshal(game.Settings)
 	if err != nil {
-		logger.Log(logger.ERROR, "[GRM-002] Failed to marshal settings json", fmt.Sprintf("Shortlink: %s, settings: %v, Error: %s", game.Shortlink, game.Settings, err.Error()))
+		logger.Log(logger.ERROR, "[GRM-002] Failed to marshal settings json", fmt.Sprintf("Shortlink: %s, settings: %+v, Error: %s", game.Shortlink, game.Settings, err.Error()))
 		return err
 	}
 
@@ -105,7 +105,7 @@ func (r *GameRepository) CreateOrUpdate(game Game) error {
 func (r *GameRepository) Update(game Game) error {
 	settingsJSON, err := json.Marshal(game.Settings)
 	if err != nil {
-		logger.Log(logger.ERROR, "[GRM-003] Failed to marshal settings json", fmt.Sprintf("Shortlink: %s, settings: %v, Error: %s", game.Shortlink, game.Settings, err.Error()))
+		logger.Log(logger.ERROR, "[GRM-003] Failed to marshal settings json", fmt.Sprintf("Shortlink: %s, settings: %+v, Error: %s", game.Shortlink, game.Settings, err.Error()))
 		return err
 	}
 
@@ -280,6 +280,13 @@ func (r *GameRepository) CreateDefaultGame(Shortlink string) error {
 		Shortlink: Shortlink,
 		Settings:  settings,
 	}
+
+	gameStateRepository := NewGameStateRepository()
+
+	gameStateRepository.SetGameState(GameState{
+		ShortLink:  Shortlink,
+		VoteStatus: 0,
+	})
 
 	return r.Create(game)
 }

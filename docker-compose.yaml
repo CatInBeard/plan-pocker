@@ -27,6 +27,9 @@ services:
     - LOG_DIR=/logs
     - CONTAINER_NAME=websocket-server
     - GAME_SERVICE_BASE_URL=http://game:8082
+    - REDIS_PASSWORD=
+    - REDIS_PORT=6379
+    - REDIS_HOST=valkey
 
   game:
     build: 
@@ -86,7 +89,6 @@ services:
     environment:
       - VALKEY_HOST=0.0.0.0
       - VALKEY_PORT=6379
-      - VALKEY_PASSWORD=${VALKEY_API_KEY}
     ports:
       - "6379:6379"
     volumes:
@@ -120,6 +122,16 @@ services:
     command: ["migrate"]
     networks:
       - internal
+
+  redisinsight:
+    image: redislabs/redisinsight:2.70
+    ports:
+      - "5540:5540"
+    depends_on:
+      - valkey
+    networks:
+      - internal
+      - external
     
 
 networks:

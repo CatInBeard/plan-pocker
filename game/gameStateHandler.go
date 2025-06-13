@@ -25,7 +25,7 @@ func handleReveal(w http.ResponseWriter, req RevealRequest) {
 	players, err := playerRepository.GetCachedPlayers(req.GameID)
 
 	if err != nil {
-		logger.Log(logger.ERROR, "[GSH-001] Failed to complete vote "+req.GameID, fmt.Sprintf("req: %v", req))
+		logger.Log(logger.ERROR, "[GSH-001] Failed to complete vote "+req.GameID, fmt.Sprintf("req: %+v", req))
 		http.Error(w, jsonError("Update failed"), http.StatusBadRequest)
 		return
 	}
@@ -38,6 +38,8 @@ func handleReveal(w http.ResponseWriter, req RevealRequest) {
 	}
 
 	gameStateRepository.SetGameState(gameState)
+
+	CalculateGameStateByGameId(req.GameID)
 
 	response := Response{Message: "ok"}
 	json.NewEncoder(w).Encode(response)
@@ -53,6 +55,8 @@ func handleStart(w http.ResponseWriter, req StartRequest) {
 	}
 
 	gameStateRepository.SetGameState(gameState)
+
+	CalculateGameStateByGameId(req.GameID)
 
 	response := Response{Message: "ok"}
 	json.NewEncoder(w).Encode(response)

@@ -9,10 +9,10 @@ import (
 )
 
 type Player struct {
-	Name   string
-	UID    string
-	GameId string
-	Vote   int
+	Name   string `json:"userName"`
+	UID    string `json:"uid"`
+	GameId string `json:"gameId"`
+	Vote   int    `json:"vote"`
 }
 
 type PlayerRepository struct {
@@ -35,15 +35,19 @@ func NewPlayerRepository() *PlayerRepository {
 
 func (r *PlayerRepository) SetPlayer(player Player) error {
 
+	key := fmt.Sprintf(PLAYER_CACHE_PATTERN, player.GameId, player.UID)
 	err := r.cache.SetStructValue(
-		fmt.Sprintf(PLAYER_CACHE_PATTERN, player.GameId, player.UID),
+		key,
 		player,
 		r.cacheTimeout,
 	)
 
 	if err != nil {
-		logger.Log(logger.ERROR, "[PRE-001] Failed to set value to cache", fmt.Sprintf("Shortlink: %s, player: %v, Error: %s", player.GameId, player, err.Error()))
+		logger.Log(logger.ERROR, "[PRE-001] Failed to set value to cache", fmt.Sprintf("Shortlink: %s, player: %+v, Error: %s", player.GameId, player, err.Error()))
 	}
+
+	logger.Log(logger.DEBUG, "[PRE-007] Add player to cache", fmt.Sprintf("Shortlink: %s, player: %+v, Key: %s", player.GameId, player, key))
+
 	return err
 }
 
@@ -58,17 +62,21 @@ func (r *PlayerRepository) GetPlayerFullKey(key string) (*Player, error) {
 		logger.Log(logger.ERROR, "[PRE-002] Failed to get value to cache", fmt.Sprintf("Key: %s, Error: %s", key, err.Error()))
 		return nil, err
 	}
+	logger.Log(logger.DEBUG, "[PRE-005] Get player by full key", fmt.Sprintf("Key: %s, Player: %+v", key, player))
 	return &player, err
 }
 
 func (r *PlayerRepository) GetCachedPlayerKeys(shortLink string) ([]string, error) {
-	games, err := r.cache.GetKeysByPattern(fmt.Sprintf("%s*", CACHE_BY_SHORT_LINK_PREFIX))
+	pattern := fmt.Sprintf("%s*", PLAYER_CACHE_PATTERN, shortLink)
+	playerKeys, err := r.cache.GetKeysByPattern(pattern)
 
 	if err != nil {
 		logger.Log(logger.ERROR, "[PRE-003] Failed to get cached keys", fmt.Sprintf("Shortlink: %s, Error: %s", shortLink, err.Error()))
 	}
 
-	return games, err
+	logger.Log(logger.DEBUG, "[PRE-006] Get player keys", fmt.Sprintf("shortLink: %s, Keys: %+v, pattern: %s", shortLink, playerKeys, pattern))
+
+	return playerKeys, err
 }
 
 func (r *PlayerRepository) GetCachedPlayers(shortLink string) ([]Player, error) {

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"time"
 
 	"shared/httputils"
 	"shared/logger"
@@ -92,8 +93,15 @@ func (manager *ClientManager) notifyClients(gameId, message string) {
 	}
 }
 
-func (manager *ClientManager) sendGameNotify(gameId, message string) {
-	manager.notifyClients(gameId, message)
+func (manager *ClientManager) SendGameNotify(gameId string, message interface{}) {
+
+	stringMessage, err := json.Marshal(message)
+
+	if err != nil {
+		logger.Log(logger.WARNING, "[WS-009] Error sending message to clients, failed unmarhal", fmt.Sprintf("Message: %+v\nError: %s", message, err.Error()))
+	}
+
+	manager.notifyClients(gameId, string(stringMessage))
 }
 
 func main() {
@@ -107,10 +115,13 @@ func main() {
 	}
 
 	http.HandleFunc("/", manager.handleConnections)
+	go SubscribeGameUpdates(manager.SendGameNotify)
 	logger.Log(logger.INFO, "[WS-001] Http server started", "Http server started on Port "+port)
 
 	err := http.ListenAndServe(":"+port, nil)
 	if err != nil {
 		logger.Log(logger.ERROR, "[WS-002] Failed to serve on port "+port, err.Error())
+		time.Sleep(5 * time.Second)
+		panic("Failed to start websocket server")
 	}
 }
