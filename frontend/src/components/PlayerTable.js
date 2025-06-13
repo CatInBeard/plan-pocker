@@ -33,7 +33,7 @@ const PlayerTable = ({ voters,revealedValue, revealAction, startNewAction }) => 
                 const offsetX = (playerWidth / 2) * Math.cos(angle);
                 const offsetY = (playerHeight / 2) * Math.sin(angle);
 
-                positions[voter.username] = { x: x + offsetX, y: y + offsetY };
+                positions[voter.userName] = { x: x + offsetX, y: y + offsetY };
             });
 
             setPlayerPositions(positions);
@@ -66,21 +66,19 @@ const PlayerTable = ({ voters,revealedValue, revealAction, startNewAction }) => 
             </div>
             {voters.map((voter) => (
                 <div
-                    key={voter.username}
+                    key={voter.userName}
                     className={(voter.vote === "ready") ? "closed player" : "player"}
                     style={{
-                        left: playerPositions[voter.username]?.x + 'px',
-                        top: playerPositions[voter.username]?.y + 'px',
+                        left: playerPositions[voter.userName]?.x + 'px',
+                        top: playerPositions[voter.userName]?.y + 'px',
                         transform: 'translate(-50%, -50%)',
                     }}
                 >
-                    <h5 className='top-text'>{voter.username}</h5>
+                    <h5 className='top-text'>{voter.userName}</h5>
                     <p>
-                        {!isNaN(voter.vote) ? (
-                            <span>{voter.vote}</span>
-                        ) : voter.vote === "waiting" ? (
+                        {voter.vote == 0 && revealedValue == 0 ? (
                             <span>Waiting</span>
-                        ) : voter.vote === "ready" ? (
+                        ) : voter.vote > 0 && revealedValue == 0 ? (
                             <span>Ready</span>
                         ) : (
                             <span>{voter.vote}</span>

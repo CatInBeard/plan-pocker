@@ -21,6 +21,8 @@ services:
     networks:
       - internal
     restart: always
+    depends_on:
+      - game
     environment:
     - LOG_LEVEL=${LOG_LEVEL}
     - FILE_INFO_DEBUG_LEVEL=${FILE_INFO_DEBUG_LEVEL}

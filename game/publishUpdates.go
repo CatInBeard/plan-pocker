@@ -83,6 +83,7 @@ func CalculateGameStateByGameId(gameId string) {
 	game, err := gameRepository.SelectByShortLink(gameId)
 	if err != nil {
 		logger.Log(logger.ERROR, "[PUGR-001] Failed to get game "+gameId, fmt.Sprintf("Error: %s", err.Error()))
+		return
 	}
 
 	gameStateRepository := NewGameStateRepository()

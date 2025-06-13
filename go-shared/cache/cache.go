@@ -102,3 +102,8 @@ func (c *CacheClient) DeleteKey(key string) error {
 	}
 	return nil
 }
+
+func (c *CacheClient) UpdateExpiration(key string, expiration time.Duration) error {
+	_, err := c.client.Expire(c.ctx, key, expiration).Result()
+	return err
+}

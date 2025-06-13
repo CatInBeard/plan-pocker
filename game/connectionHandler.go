@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"net/http"
 	"shared/logger"
+
+	"github.com/go-redis/redis/v8"
 )
 
 type ConnectionRequest struct {
@@ -25,13 +27,40 @@ func handleConnection(w http.ResponseWriter, req ConnectionRequest) {
 		gameRepository.CreateDefaultGame(req.GameID)
 	}
 
+	gameStateRepository := NewGameStateRepository()
+
+	gameState, errState := gameStateRepository.GetGameState(req.GameID)
+
 	playerRepository := NewPlayerRepository()
-	playerRepository.SetPlayer(Player{
-		Name:   req.Name,
-		UID:    req.UID,
-		Vote:   req.Vote,
-		GameId: req.GameID,
-	})
+
+	shouldUpdate := false
+
+	if errState != nil {
+		shouldUpdate = true
+	} else {
+		if gameState.VoteStatus == 0 {
+			shouldUpdate = true
+		} else {
+			_, err = playerRepository.GetPlayer(req.GameID, req.UID)
+			if err == redis.Nil {
+				shouldUpdate = true
+			}
+		}
+	}
+
+	if shouldUpdate {
+		playerRepository.SetPlayer(Player{
+			Name:   req.Name,
+			UID:    req.UID,
+			Vote:   req.Vote,
+			GameId: req.GameID,
+		})
+	} else {
+		playerRepository.UpdatePlayerLive(Player{
+			UID:    req.UID,
+			GameId: req.GameID,
+		})
+	}
 
 	go CalculateGameStateByGameId(req.GameID)
 

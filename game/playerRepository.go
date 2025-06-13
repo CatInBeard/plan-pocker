@@ -51,6 +51,23 @@ func (r *PlayerRepository) SetPlayer(player Player) error {
 	return err
 }
 
+func (r *PlayerRepository) UpdatePlayerLive(player Player) error {
+
+	key := fmt.Sprintf(PLAYER_CACHE_PATTERN, player.GameId, player.UID)
+	err := r.cache.UpdateExpiration(
+		key,
+		r.cacheTimeout,
+	)
+
+	if err != nil {
+		logger.Log(logger.ERROR, "[PRE-008] Failed to update cache expiration", fmt.Sprintf("Shortlink: %s, player: %+v, Error: %s", player.GameId, player, err.Error()))
+	}
+
+	logger.Log(logger.DEBUG, "[PRE-009] sucessfully update cache expiration", fmt.Sprintf("Shortlink: %s, player: %+v, Key: %s", player.GameId, player, key))
+
+	return err
+}
+
 func (r *PlayerRepository) GetPlayer(gameId, UID string) (*Player, error) {
 	return r.GetPlayerFullKey(fmt.Sprintf(PLAYER_CACHE_PATTERN, gameId, UID))
 }
@@ -67,7 +84,7 @@ func (r *PlayerRepository) GetPlayerFullKey(key string) (*Player, error) {
 }
 
 func (r *PlayerRepository) GetCachedPlayerKeys(shortLink string) ([]string, error) {
-	pattern := fmt.Sprintf("%s*", PLAYER_CACHE_PATTERN, shortLink)
+	pattern := fmt.Sprintf(PLAYER_CACHE_PATTERN, shortLink, "*")
 	playerKeys, err := r.cache.GetKeysByPattern(pattern)
 
 	if err != nil {
