@@ -6,7 +6,7 @@ const Settings = ({ deck, allowCustomDeck, setSettings }) => {
     const [isCustomDeckAllowed, setIsCustomDeckAllowed] = useState(allowCustomDeck);
 
     useEffect(() => {
-        setLocalDeck(deck);
+        setLocalDeck(deck.join(','));
         setIsCustomDeckAllowed(allowCustomDeck)
     }, []);
 
@@ -19,7 +19,7 @@ const Settings = ({ deck, allowCustomDeck, setSettings }) => {
     };
 
     const saveSettings = () => {
-        setSettings(localDeck, isCustomDeckAllowed);
+        setSettings(localDeck.split(',').map(item => item.trim()), isCustomDeckAllowed);
     };
 
     return (

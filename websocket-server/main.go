@@ -30,10 +30,16 @@ func NewClientManager() *ClientManager {
 	}
 }
 
+type GameIdRequest struct {
+	UID    string `json:"uid,omitempty"`
+	GameId string `json:"gameId"`
+}
+
 func (manager *ClientManager) handleConnections(w http.ResponseWriter, r *http.Request) {
-	requestInfo := httputils.CollectRequestInfoString(r)
 	ws, err := upgrader.Upgrade(w, r, nil)
+	requestInfo := httputils.CollectRequestInfoString(r)
 	if err != nil {
+		requestInfo := httputils.CollectRequestInfoString(r)
 		logger.Log(logger.ERROR, "[WS-003] WebSocket upgrade failed", fmt.Sprintf("Error: %s\nRequest details: %s", err.Error(), requestInfo))
 		http.Error(w, "WebSocket upgrade failed", http.StatusBadRequest)
 		return
@@ -45,25 +51,27 @@ func (manager *ClientManager) handleConnections(w http.ResponseWriter, r *http.R
 	for {
 		_, message, err := ws.ReadMessage()
 		if err != nil {
-			logger.Log(logger.WARNING, "[WS-004] Failed to read websocket message", fmt.Sprintf("Error: %s\nRequest details: %s", err.Error(), requestInfo))
+			if closeErr, ok := err.(*websocket.CloseError); ok {
+				logger.Log(logger.INFO, "[WS-007] Websocket connection closed", fmt.Sprintf("Error: %s\nRequest details: %s\nMessage: %s", closeErr.Error(), requestInfo, message))
+				return
+			}
+			logger.Log(logger.WARNING, "[WS-004] Failed to read websocket message", fmt.Sprintf("Error: %s\nRequest details: %s\nMessage: %s", err.Error(), requestInfo, message))
 			break
 		}
-		logger.Log(logger.DEBUG, "[WS-005] Received new WS message", fmt.Sprintf("Message: %s\nHeaders:%s\nRequest details: ", string(message), r.Header, requestInfo))
 
-		var msg map[string]string
-		if err := json.Unmarshal(message, &msg); err != nil {
-			logger.Log(logger.WARNING, "[WS-006] Error unmarshaling message", fmt.Sprintf("Error: %s\nRequest details: %s", err.Error(), requestInfo))
-			continue
-		}
-
-		if msg["action"] == "reg" {
-			gameId = msg["gameId"]
+		var gameIdRequest GameIdRequest
+		if err := json.Unmarshal(message, &gameIdRequest); err != nil {
+			logger.Log(logger.WARNING, "[WS-005] Error unmarshaling message to gameId", fmt.Sprintf("Error: %s\nRequest details: %s\nMessage: %s", err.Error(), requestInfo, message))
+		} else {
+			gameId = gameIdRequest.GameId
 			if manager.clients[gameId] == nil {
 				manager.clients[gameId] = make(map[*websocket.Conn]struct{})
 			}
 			manager.clients[gameId][ws] = struct{}{}
-			logger.Log(logger.INFO, fmt.Sprintf("[WS-007] Client registered with gameId: %s", gameId), fmt.Sprintf("Game id: %s\nRequest details: %s", gameId, requestInfo))
+			logger.Log(logger.DEBUG, fmt.Sprintf("[WS-006] Client registered with gameId: %s", gameId), fmt.Sprintf("Game id: %s\nRequest details: %s\nMessage: %s", gameId, requestInfo, message))
 		}
+
+		handleMessage(message, ws, r)
 	}
 
 	if gameId != "" {

@@ -37,6 +37,7 @@ func NewGameRepository() *GameRepository {
 	dbClient, replicaErr := db.GetDbClient()
 	useReplica := true
 	if replicaErr != nil {
+		logger.Log(logger.WARNING, "[GRM-005] REPLICA db does not work, use only PRIMARY", fmt.Sprintf("Error: %s", replicaErr.Error()))
 		useReplica = false
 	}
 

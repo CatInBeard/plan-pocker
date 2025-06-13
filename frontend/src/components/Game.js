@@ -21,6 +21,8 @@ const Game = ({ id }) => {
     const [showSettings, setShowSettings] = useState(false)
     const [uid, setUid] = useState(null);
     const [selectedCard, setSelectedCard] = useState(null);
+    const [wsClient, setWsClient] = useState(null)
+    const [connectionStatus, setConnectionStatus] = useState("Not set")
 
     const openSettings = () => {
         setShowSettings(true)
@@ -30,15 +32,13 @@ const Game = ({ id }) => {
         const message = {
             gameId: id,
             action : 'setSettings',
-            deck : deck,
+            deck : deck.map(item => Number(item)),
+            uid : uid,
             isCustomDeckAllowed: isCustomDeckAllowed
         };
-        wsClient.send(JSON.stringify(message))
+        wsClient.send(message)
         setShowSettings(false)
     }
-
-    let [wsClient, setWsClient] = useState(null)
-    let [connectionStatus, setConncetionStatus] = useState("Not set")
 
     let onWsMessage = (message) => {
 
@@ -61,7 +61,7 @@ const Game = ({ id }) => {
 
     useEffect(() => {
         if (!wsClient) {
-            setWsClient(new WsClient(setConncetionStatus, onWsMessage))
+            setWsClient(new WsClient(setConnectionStatus, onWsMessage))
         }
     }, [])
 
@@ -113,10 +113,10 @@ const Game = ({ id }) => {
             userName: userName,
             uid: uid,
             gameId: id,
-            action: 'connected',
+            action: 'connect',
             vote: selectedCard ?? 0
             };
-            wsClient.send(JSON.stringify(message))
+            wsClient.send(message)
         };
 
         sendMessage();
@@ -143,23 +143,21 @@ const Game = ({ id }) => {
 
     const revealAction = () => {
         wsClient.send(
-            JSON.stringify(
                 {
                     action: "reveal",
                     gameId: id,
+                    uid: uid
                 }
-            )
         );
     }
 
     const startNewAction = () => {
         wsClient.send(
-            JSON.stringify(
                 {
-                    action: "replay",
+                    action: "start",
                     gameId: id,
+                    uid: uid
                 }
-            )
         );
     }
 

@@ -19,4 +19,4 @@ rebuild: ## Rebuild the services and recreate the database
 	docker-compose -f $(COMPOSE_FILE) --env-file $(ENV_FILE) up --build -d
 
 migrate: ## Run pending migrations
-	docker-compose --env-file $(ENV_FILE) restart flyway 
+	docker-compose --env-file $(ENV_FILE) up flyway 

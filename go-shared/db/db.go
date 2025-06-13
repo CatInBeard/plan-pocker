@@ -30,7 +30,7 @@ func GetDbClient() (*DbClient, error) {
 		}
 
 	})
-	return instance, nil
+	return instance, errReplica
 }
 
 func (d *DbClient) init() (error, error) {
@@ -59,6 +59,14 @@ func (d *DbClient) init() (error, error) {
 	d.slaveDB, err = sql.Open("mysql", replicaDSN)
 
 	if err != nil {
+		return nil, err
+	}
+
+	if err := d.primaryDB.Ping(); err != nil {
+		return err, nil
+	}
+
+	if err := d.slaveDB.Ping(); err != nil {
 		return nil, err
 	}
 
