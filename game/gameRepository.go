@@ -187,7 +187,7 @@ func (r *GameRepository) SelectById(id int) (*Game, error) {
 func (r *GameRepository) SelectByShortLink(shortlink string) (*Game, error) {
 	var game Game
 
-	cacheErr := r.cache.GetStructValue(CACHE_BY_SHORT_LINK_PREFIX+game.Shortlink, game)
+	cacheErr := r.cache.GetStructValue(CACHE_BY_SHORT_LINK_PREFIX+game.Shortlink, &game)
 
 	if cacheErr == nil {
 		return &game, nil

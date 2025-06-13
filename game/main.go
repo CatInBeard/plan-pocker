@@ -2,31 +2,13 @@ package main
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
+	"os"
+	"shared/logger"
 )
 
 type ActionRequest struct {
 	Action string `json:"action"`
-}
-
-type UpdateSettingsRequest struct {
-	Action      string `json:"action"`
-	UID         string `json:"uid,omitempty"`
-	Deck        []int  `json:"deck"`
-	AllowCustom bool   `json:"allowCustom"`
-}
-
-type RevealRequest struct {
-	Action string `json:"action"`
-	UID    string `json:"uid,omitempty"`
-	GameID string `json:"gameId"`
-}
-
-type StartRequest struct {
-	Action string `json:"action"`
-	UID    string `json:"uid,omitempty"`
-	GameID string `json:"gameId"`
 }
 
 type Response struct {
@@ -85,21 +67,6 @@ func handler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func handleUpdateSettings(w http.ResponseWriter, req UpdateSettingsRequest) {
-	response := Response{Message: "ok"}
-	json.NewEncoder(w).Encode(response)
-}
-
-func handleReveal(w http.ResponseWriter, req RevealRequest) {
-	response := Response{Message: "ok"}
-	json.NewEncoder(w).Encode(response)
-}
-
-func handleStart(w http.ResponseWriter, req StartRequest) {
-	response := Response{Message: "ok"}
-	json.NewEncoder(w).Encode(response)
-}
-
 func jsonError(message string) string {
 	errorResponse := ErrorResponse{Error: message}
 	response, _ := json.Marshal(errorResponse)
@@ -107,9 +74,17 @@ func jsonError(message string) string {
 }
 
 func main() {
+	defer logger.LogFatal()
+
+	port := os.Getenv("APPLICATION_PORT")
+	if port == "" {
+		port = "8082"
+	}
+	logger.Log(logger.INFO, "[GHS-001] Http server started", "Http server started on Port "+port)
+
 	http.HandleFunc("/", handler)
-	fmt.Println("Server is running on port 8082...")
-	if err := http.ListenAndServe(":8082", nil); err != nil {
-		fmt.Println("Error starting server:", err)
+	err := http.ListenAndServe(":"+port, nil)
+	if err != nil {
+		logger.Log(logger.ERROR, "[GHS-002] Failed to serve on port "+port, err.Error())
 	}
 }

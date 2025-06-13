@@ -26,6 +26,7 @@ services:
     - FILE_INFO_DEBUG_LEVEL=${FILE_INFO_DEBUG_LEVEL}
     - LOG_DIR=/logs
     - CONTAINER_NAME=websocket-server
+    - GAME_SERVICE_BASE_URL=http://game
 
   game:
     build: 
@@ -45,6 +46,14 @@ services:
     - FILE_INFO_DEBUG_LEVEL=${FILE_INFO_DEBUG_LEVEL}
     - LOG_DIR=/logs
     - CONTAINER_NAME=game
+    - REDIS_PASSWORD=${VALKEY_API_KEY}
+    - REDIS_PORT=8080
+    - REDIS_HOST=valkey
+    - DB_PRIMARY_HOST=mysql
+    - DB_PRIMARY_PORT=3006
+    - DB_PRIMARY_NAME=${MYSQL_DATABASE}
+    - DB_PRIMARY_USER=${MYSQL_USER}
+    - DB_PRIMARY_PASSWORD=${MYSQL_PASSWORD}
 
   phpmyadmin:
     image: phpmyadmin/phpmyadmin
@@ -67,9 +76,24 @@ services:
       - MYSQL_PASSWORD=${MYSQL_PASSWORD}
     volumes:
       - ./local/data/mysql:/var/lib/mysql
+    ports:
+      - "3306:3306"
     networks:
       - internal
     restart: always
+  valkey:
+    image: valkey/valkey:8.1.2-alpine
+    environment:
+      - VALKEY_HOST=0.0.0.0
+      - VALKEY_PORT=8080
+      - VALKEY_API_KEY=${VALKEY_API_KEY}
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./local/data/valkey:/data 
+    networks:
+      - internal
+    restart: always  
 
   nginx:
     build: ./local/nginx
