@@ -42,8 +42,16 @@
 }
 
 .player {
-  min-height: 120px;
   position: absolute;
+  z-index: 0;
+  display: flex;
+  justify-content: center;
+  flex-direction: column;
+  align-items: center;
+}
+
+.card {
+  min-height: 120px;
   background-color: lightgray;
   padding: 10px;
   border-radius: 10px;
@@ -51,7 +59,14 @@
   width: 80px;
   box-sizing: border-box;
   word-break: break-word;
-  z-index: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 30px;
+}
+
+.card i {
+  font-size: 40px;
 }
 
 .closed {
@@ -80,4 +95,13 @@
   margin: 4px 2px;
   cursor: pointer;
   border-radius: 5px;
+}
+
+.top-text {
+  background-color:rgb(168, 240, 216);
+  padding: 10px;
+  text-align: center;
+  margin: 5px;
+  border-radius: 46%;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
 }

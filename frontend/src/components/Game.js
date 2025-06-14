@@ -117,7 +117,7 @@ const Game = ({ id }) => {
             uid: uid,
             gameId: id,
             action: 'connect',
-            vote: selectedCardRef.current ?? 0
+            vote: selectedCardRef.current ? Number(selectedCardRef.current) : 0
             })
         };
 

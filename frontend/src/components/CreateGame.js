@@ -1,6 +1,7 @@
 import { useState } from "react"
 import Popup from "./Popup"
 import { useNavigate } from 'react-router-dom';
+import './CreateGame.css'
 
 function generateRandomString(len) {
     const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
@@ -16,9 +17,23 @@ function generateRandomString(len) {
 }
 
 
-const getUrl = () => {
-    return "/" +  generateRandomString(5)
-}
+const getUrl = async () => {
+    const response = await fetch(`${window.location.origin}/api/service`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ action: 'createGame' }),
+    });
+
+    if (!response.ok) {
+        throw new Error('Network response was not ok');
+    }
+
+    const data = await response.json();
+    return "/" + data.gameId;
+};
+
 
 const CreateGame = () => {
     const navigate = useNavigate();
@@ -26,7 +41,7 @@ const CreateGame = () => {
     const [url, setUrl] = useState(null);
 
     const createGame = async () => {
-        const url = getUrl()
+        const url = await getUrl()
         setUrl(url)
         setSeconds(5);
 
@@ -39,7 +54,7 @@ const CreateGame = () => {
         
     }
 
-    return <div>
+    return <div className="bg-image">
         <div className="p-5 mb-4 bg-light rounded-3">
             <div className="container-fluid py-5">
                 <h1 className="display-5 fw-bold">Welcome to planing poker!</h1>

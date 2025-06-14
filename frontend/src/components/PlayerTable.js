@@ -67,23 +67,23 @@ const PlayerTable = ({ voters,revealedValue, revealAction, startNewAction }) => 
             {voters.map((voter) => (
                 <div
                     key={voter.userName}
-                    className={(voter.vote === "ready") ? "closed player" : "player"}
+                    className={"player"}
                     style={{
                         left: playerPositions[voter.userName]?.x + 'px',
                         top: playerPositions[voter.userName]?.y + 'px',
                         transform: 'translate(-50%, -50%)',
                     }}
                 >
-                    <h5 className='top-text'>{voter.userName}</h5>
-                    <p>
+                    <div className='top-text'><h5>{voter.userName}</h5></div>
+                    <div className={voter.vote > 0 && revealedValue == 0 ? 'card closed' : 'card ' }>
                         {voter.vote == 0 && revealedValue == 0 ? (
-                            <span>Waiting</span>
+                            <span><i className="bi bi-patch-question-fill"></i></span>
                         ) : voter.vote > 0 && revealedValue == 0 ? (
-                            <span>Ready</span>
+                            <span><i className="bi bi-patch-check-fill"></i></span>
                         ) : (
                             <span>{voter.vote}</span>
                         )}
-                    </p>
+                    </div>
                 </div>
             ))}
         </div>

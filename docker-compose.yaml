@@ -32,7 +32,8 @@ services:
     - REDIS_PASSWORD=
     - REDIS_PORT=6379
     - REDIS_HOST=valkey
-
+    - GAME_STATUS_CACHE_TIMEOUT=1
+    - STAY_CONNECTED_PLAYER=5
   game:
     build: 
       context: .
@@ -59,7 +60,25 @@ services:
     - DB_PRIMARY_NAME=${MYSQL_DATABASE}
     - DB_PRIMARY_USER=root
     - DB_PRIMARY_PASSWORD=${MYSQL_ROOT_PASSWORD}
-
+  api-server:
+      build: 
+        context: .
+        dockerfile: ./local/api-server/Dockerfile
+      ports:
+        - "8083:8083"
+      volumes:
+        - ./api-server:/app
+        - ./go-shared:/go-shared
+        - ./local/data/logs:/logs
+      networks:
+        - internal
+      restart: always
+      environment:
+      - LOG_LEVEL=${LOG_LEVEL}
+      - FILE_INFO_DEBUG_LEVEL=${FILE_INFO_DEBUG_LEVEL}
+      - LOG_DIR=/logs
+      - CONTAINER_NAME=api-server
+      - GAME_SERVICE_BASE_URL=http://game:8082
   phpmyadmin:
     image: phpmyadmin/phpmyadmin
     ports:
@@ -110,6 +129,18 @@ services:
     networks:
       - internal
       - external
+    environment:
+      - BASIC_USERNAME=${HTTP_ADMIN_USERNAME}
+      - BASIC_PASSWORD=${HTTP_ADMIN_PASSWORD}
+    command:
+      - sh
+      - -c
+      - |
+        printf "$$BASIC_USERNAME:$$(openssl passwd -1 $$BASIC_PASSWORD)\n" >> /etc/nginx/.htpasswd
+        /docker-entrypoint.sh nginx -g "daemon off;"
+    volumes:
+      - ./local/data/nginx:/var/log/nginx
+      - ./local/nginx/index.html:/admin/index.html
 
   flyway:
     image: flyway/flyway:11.9-alpine-mongo
@@ -133,7 +164,10 @@ services:
       - valkey
     networks:
       - internal
-      - external
+    environment:
+      - RI_PROXY_PATH=/admin/redis/
+    volumes:
+        - ./local/data/redisinsight:/db
     
 
 networks:

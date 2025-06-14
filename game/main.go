@@ -78,6 +78,14 @@ func handler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		handleStart(w, req)
+	case "createGame":
+		var req CreateGameRequest
+		if err := json.Unmarshal(body, &req); err != nil {
+			logger.Log(logger.ERROR, "[GHS-007] Error marshal json for StartRequest", fmt.Sprintf("Error: %s, Request info:%s\nBody:%s", err, requestInfo, body))
+			http.Error(w, jsonError("Invalid JSON for start"), http.StatusBadRequest)
+			return
+		}
+		HandleCreateGame(w, req)
 	default:
 		logger.Log(logger.WARNING, "[GHS-002] Unknown action "+actionReq.Action, fmt.Sprintf("Action: %s, Request info:%s\nBody:%s", actionReq.Action, requestInfo, body))
 		http.Error(w, jsonError("Unknown action"), http.StatusBadRequest)
