@@ -7,6 +7,7 @@ import Container from "./components/Container"
 import { BrowserRouter as Router, Route, Routes, useParams } from 'react-router-dom';
 import CreateGame from './components/CreateGame';
 import Game from './components/Game';
+import Footer from './components/Footer'
 
 function HomePage() {
   
@@ -15,6 +16,7 @@ function HomePage() {
     <Container>
       <CreateGame/>
     </Container>
+    <Footer/>
     </>
 }
 

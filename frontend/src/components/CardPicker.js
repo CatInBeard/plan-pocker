@@ -9,7 +9,13 @@ const CardPicker = ({selectedCard, availableCards = [], allowCustom = false, sel
     };
 
     const handleCustomCardChange = (event) => {
-        setCustomCard(event.target.value);
+        const value = event.target.value;
+
+        if (value === '' || (value >= 1 && value <= 999)) {
+            setCustomCard(value);
+        } else {
+            setCustomCard(1);
+        }
     };
 
     const handleCustomCardSubmit = () => {
@@ -35,7 +41,9 @@ const CardPicker = ({selectedCard, availableCards = [], allowCustom = false, sel
                 <div className={`${style.cardCustom} ${selectedCard === customCard ? style.selected : ''}`}>
                     <input
                         className={style.cardInput} 
-                        type="number" maxLength="3" pattern="\d{3}"  
+                        type="number" 
+                        min="1" 
+                        max="999" 
                         value={customCard} 
                         onChange={handleCustomCardChange} 
                         placeholder='???'

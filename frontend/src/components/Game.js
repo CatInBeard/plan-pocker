@@ -9,6 +9,9 @@ import style from "./Game.module.css"
 import { v4 as uuidv4 } from 'uuid';
 
 import { useState, useEffect, useRef } from 'react';
+import Popup from "./Popup";
+import Loader from "./Loader";
+import Footer from "./Footer"
 
 
 const Game = ({ id }) => {
@@ -37,6 +40,10 @@ const Game = ({ id }) => {
             isCustomDeckAllowed: isCustomDeckAllowed
         };
         wsClient.send(message)
+        setShowSettings(false)
+    }
+
+    const closeSettings = () => {
         setShowSettings(false)
     }
 
@@ -174,10 +181,12 @@ const Game = ({ id }) => {
             </div>
         </Header>
         <Container>
-            {showSettings && <Settings deck={deck} allowCustomDeck={allowCustomDeck} setSettings={setSettings} />}
+            {voters.length == 0 && <Popup header={"Loading, please wait"}><Loader/></Popup>}
+            {showSettings && <Settings deck={deck} allowCustomDeck={allowCustomDeck} closeSettings={closeSettings} setSettings={setSettings} />}
             <PlayerTable voters={voters} revealedValue={revealedValue} revealAction={revealAction} startNewAction={startNewAction} />
             <CardPicker availableCards={deck} allowCustom={allowCustomDeck} selectCallback={pickCB} selectedCard={selectedCard} />
         </Container>
+        <Footer/>
     </>
 }
 

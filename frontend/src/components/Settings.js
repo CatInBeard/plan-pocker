@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import Popup from "./Popup";
 
-const Settings = ({ deck, allowCustomDeck, setSettings }) => {
+const Settings = ({ deck, allowCustomDeck, setSettings, closeSettings }) => {
     const [localDeck, setLocalDeck] = useState(deck);
     const [isCustomDeckAllowed, setIsCustomDeckAllowed] = useState(allowCustomDeck);
 
@@ -19,11 +19,23 @@ const Settings = ({ deck, allowCustomDeck, setSettings }) => {
     };
 
     const saveSettings = () => {
-        setSettings(localDeck.split(',').map(item => item.trim()), isCustomDeckAllowed);
+        const numbers = localDeck.split(',')
+            .map(item => item.trim())
+            .map(Number)
+            .filter(item => !isNaN(item));
+
+        if (numbers.length > 0) {
+            numbers.sort((a, b) => a - b);
+            setSettings(numbers, isCustomDeckAllowed);
+        } else {
+            const powersOfTwo = Array.from({ length: 9 }, (_, i) => Math.pow(2, i));
+            setSettings(powersOfTwo, isCustomDeckAllowed);
+        }
     };
 
+
     return (
-        <Popup header={"Game settings:"}>
+        <Popup header={"Game settings:"} closeAction={closeSettings}>
             <div className="form-group mb-2">
                 <label>Deck:</label>
                 <input
