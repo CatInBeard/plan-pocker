@@ -61,7 +61,7 @@ const PlayerTable = ({ voters,revealedValue, revealAction, startNewAction }) => 
                     Start new game
                 </button> )}
                 {revealedValue != 0 && (
-                    <p className="average-card-value">Average: {revealedValue}</p>
+                    <p className="average-card-value">Average: {parseFloat(revealedValue).toFixed(1)}</p>
                 )}
             </div>
             {voters.map((voter) => (

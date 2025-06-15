@@ -79,6 +79,8 @@ services:
       - LOG_DIR=/logs
       - CONTAINER_NAME=api-server
       - GAME_SERVICE_BASE_URL=http://game:8082
+      depends_on:
+      - game
   phpmyadmin:
     image: phpmyadmin/phpmyadmin
     ports:
@@ -125,7 +127,7 @@ services:
     depends_on:
       - react
       - websocket-server
-      - phpmyadmin
+      - api-server
     networks:
       - internal
       - external
