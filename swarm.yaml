@@ -1,8 +1,6 @@
 services:
   frontend:
     image: plan-pocker-frontend
-    ports:
-      - "8122:80"
     networks:
       - internal
     deploy:
@@ -14,8 +12,6 @@ services:
 
   websocket-server:
     image: plan-pocker-websocket-server
-    ports:
-      - "8081:8081"
     volumes:
       - ./cloud/data/logs:/logs
     networks:
@@ -40,10 +36,8 @@ services:
 
   game:
     image: plan-pocker-game
-    ports:
-      - "8082:8082"
     volumes:
-      - ./local/data/logs:/logs
+      - ./cloud/data/logs:/logs
     networks:
       - internal
     environment:
@@ -66,10 +60,8 @@ services:
 
   api-server:
     image: plan-pocker-api-server
-    ports:
-      - "8083:8083"
     volumes:
-      - ./local/data/logs:/logs
+      - ./cloud/data/logs:/logs
     networks:
       - internal
     environment:
@@ -87,8 +79,6 @@ services:
 
   phpmyadmin:
     image: phpmyadmin/phpmyadmin
-    ports:
-      - "8055:80" 
     environment:
       PMA_HOST: mysql
       PMA_USER: root
@@ -110,8 +100,6 @@ services:
       MYSQL_PASSWORD: ${MYSQL_PASSWORD}
     volumes:
       - ./cloud/data/mysql:/var/lib/mysql
-    ports:
-      - "3306:3306"
     networks:
       - internal
     deploy:
@@ -124,8 +112,6 @@ services:
     environment:
       VALKEY_HOST: 0.0.0.0
       VALKEY_PORT: 6379
-    ports:
-      - "6379:6379"
     volumes:
       - ./cloud/data/valkey:/data 
     networks:
@@ -138,7 +124,9 @@ services:
   nginx:
     image: plan-pocker-nginx
     ports:
-      - "${APPLICATION_PORT}:80"
+      - target: 80
+        published: ${APPLICATION_PORT}
+        mode: host
     depends_on:
       - react
       - websocket-server
@@ -152,7 +140,7 @@ services:
     command: >
       sh -c "printf '$BASIC_USERNAME:$(openssl passwd -1 $BASIC_PASSWORD)\n' >> /etc/nginx/.htpasswd && /docker-entrypoint.sh nginx -g 'daemon off;'"
     volumes:
-      - ./local/data/nginx:/var/log/nginx
+      - ./cloud/data/nginx:/var/log/nginx
     deploy:
       replicas: 1
       restart_policy:
@@ -178,8 +166,6 @@ services:
 
   redisinsight:
     image: redislabs/redisinsight:2.70
-    ports:
-      - "5540:5540"
     depends_on:
       - valkey
     networks:
@@ -187,7 +173,7 @@ services:
     environment:
       - RI_PROXY_PATH=/admin/redis/
     volumes:
-      - ./local/data/redisinsight:/db
+      - ./cloud/data/redisinsight:/db
     deploy:
       replicas: 0 # Use docker service scale redisinsight=1 if necessary
       restart_policy:
