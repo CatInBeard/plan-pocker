@@ -3,6 +3,7 @@
 
 # Local data
 local/data
+cloud/data
 # Node modules and dependencies
 node_modules/
 
