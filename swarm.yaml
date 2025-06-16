@@ -1,0 +1,201 @@
+services:
+  frontend:
+    image: plan-pocker-frontend
+    ports:
+      - "8122:80"
+    networks:
+      - internal
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+    volumes:
+      - ./cloud/data/nginx-frontend:/var/log/nginx
+
+  websocket-server:
+    image: plan-pocker-websocket-server
+    ports:
+      - "8081:8081"
+    volumes:
+      - ./cloud/data/logs:/logs
+    networks:
+      - internal
+    depends_on:
+      - game
+    environment:
+      LOG_LEVEL: ${LOG_LEVEL}
+      FILE_INFO_DEBUG_LEVEL: ${FILE_INFO_DEBUG_LEVEL}
+      LOG_DIR: /logs
+      CONTAINER_NAME: websocket-server
+      GAME_SERVICE_BASE_URL: http://game:8082
+      REDIS_PASSWORD: ""
+      REDIS_PORT: 6379
+      REDIS_HOST: valkey
+      GAME_STATUS_CACHE_TIMEOUT: 1
+      STAY_CONNECTED_PLAYER: 5
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+
+  game:
+    image: plan-pocker-game
+    ports:
+      - "8082:8082"
+    volumes:
+      - ./local/data/logs:/logs
+    networks:
+      - internal
+    environment:
+      LOG_LEVEL: ${LOG_LEVEL}
+      FILE_INFO_DEBUG_LEVEL: ${FILE_INFO_DEBUG_LEVEL}
+      LOG_DIR: /logs
+      CONTAINER_NAME: game
+      REDIS_PASSWORD: ""
+      REDIS_PORT: 6379
+      REDIS_HOST: valkey
+      DB_PRIMARY_HOST: mysql
+      DB_PRIMARY_PORT: 3306
+      DB_PRIMARY_NAME: ${MYSQL_DATABASE}
+      DB_PRIMARY_USER: root
+      DB_PRIMARY_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+
+  api-server:
+    image: plan-pocker-api-server
+    ports:
+      - "8083:8083"
+    volumes:
+      - ./local/data/logs:/logs
+    networks:
+      - internal
+    environment:
+      LOG_LEVEL: ${LOG_LEVEL}
+      FILE_INFO_DEBUG_LEVEL: ${FILE_INFO_DEBUG_LEVEL}
+      LOG_DIR: /logs
+      CONTAINER_NAME: api-server
+      GAME_SERVICE_BASE_URL: http://game:8082
+    depends_on:
+      - game
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    ports:
+      - "8055:80" 
+    environment:
+      PMA_HOST: mysql
+      PMA_USER: root
+      PMA_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+    networks:
+      - internal
+
+    deploy:
+      replicas: 0 # Use docker service scale phpmyadmin=1 if necessary
+      restart_policy:
+        condition: none
+
+  mysql:
+    image: mysql:8.0
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+    volumes:
+      - ./cloud/data/mysql:/var/lib/mysql
+    ports:
+      - "3306:3306"
+    networks:
+      - internal
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+
+  valkey:
+    image: valkey/valkey:8.1.2-alpine
+    environment:
+      VALKEY_HOST: 0.0.0.0
+      VALKEY_PORT: 6379
+    ports:
+      - "6379:6379"
+    volumes:
+      - ./cloud/data/valkey:/data 
+    networks:
+      - internal  
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+
+  nginx:
+    image: plan-pocker-nginx
+    ports:
+      - "${APPLICATION_PORT}:80"
+    depends_on:
+      - react
+      - websocket-server
+      - api-server
+    networks:
+      - internal
+      - external
+    environment:
+      - BASIC_USERNAME=${HTTP_ADMIN_USERNAME}
+      - BASIC_PASSWORD=${HTTP_ADMIN_PASSWORD}
+    command: >
+      sh -c "printf '$BASIC_USERNAME:$(openssl passwd -1 $BASIC_PASSWORD)\n' >> /etc/nginx/.htpasswd && /docker-entrypoint.sh nginx -g 'daemon off;'"
+    volumes:
+      - ./local/data/nginx:/var/log/nginx
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+
+  flyway:
+    image: flyway/flyway:11.9-alpine-mongo
+    environment:
+      FLYWAY_URL: jdbc:mysql://mysql:3306/${MYSQL_DATABASE}
+      FLYWAY_USER: root
+      FLYWAY_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+    volumes:
+      - ./sql:/flyway/sql
+    depends_on:
+      - mysql
+    command: ["migrate"]
+    networks:
+      - internal
+    deploy:
+      replicas: 0 # Use docker service scale flyway=1 to run migrate
+      restart_policy:
+        condition: none
+
+  redisinsight:
+    image: redislabs/redisinsight:2.70
+    ports:
+      - "5540:5540"
+    depends_on:
+      - valkey
+    networks:
+      - internal
+    environment:
+      - RI_PROXY_PATH=/admin/redis/
+    volumes:
+      - ./local/data/redisinsight:/db
+    deploy:
+      replicas: 0 # Use docker service scale redisinsight=1 if necessary
+      restart_policy:
+        condition: none
+
+networks:
+  internal:
+    driver: overlay
+    internal: true
+  external:
+    driver: overlay
