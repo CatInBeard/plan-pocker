@@ -1,12 +1,16 @@
 services:
   react:
-    build: ./frontend
+    build: 
+      context: .
+      dockerfile: ./local/frontend/Dockerfile
     ports:
       - "80:80"
     volumes:
       - ./frontend:/app
     networks:
       - internal
+    command: sh -c "npm install && npm start"
+
 
   websocket-server:
     build: 
