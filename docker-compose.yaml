@@ -138,12 +138,6 @@ services:
     environment:
       - BASIC_USERNAME=${HTTP_ADMIN_USERNAME}
       - BASIC_PASSWORD=${HTTP_ADMIN_PASSWORD}
-    command:
-      - sh
-      - -c
-      - |
-        printf "$$BASIC_USERNAME:$$(openssl passwd -1 $$BASIC_PASSWORD)\n" >> /etc/nginx/.htpasswd
-        /docker-entrypoint.sh nginx -g "daemon off;"
     volumes:
       - ./local/data/nginx:/var/log/nginx
       - ./local/nginx/index.html:/admin/index.html
