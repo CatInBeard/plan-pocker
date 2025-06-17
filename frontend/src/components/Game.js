@@ -20,10 +20,10 @@ const Game = ({ id }) => {
     const [voters, setVoters] = useState([])
     const [deck, setDeck] = useState([])
     const [allowCustomDeck, setAllowCustomDeck] = useState(false)
-    const [revealedValue, setRevealedValue] = useState(null)
+    const [revealedValue, setRevealedValue] = useState(0)
     const [showSettings, setShowSettings] = useState(false)
     const [uid, setUid] = useState(null);
-    const [selectedCard, setSelectedCard] = useState(null);
+    const [selectedCard, setSelectedCard] = useState(0);
     const [wsClient, setWsClient] = useState(null)
     const [connectionStatus, setConnectionStatus] = useState("Not set")
 
@@ -58,8 +58,8 @@ const Game = ({ id }) => {
             case "voters":
                 setVoters(message.voters ?? [])
                 setRevealedValue(message.vote)
-                if(message.vote){
-                    setSelectedCard(null)
+                if(message.vote && selectedCard >= 0){
+                    setSelectedCard(0)
                 }
             break;
             case "deck":

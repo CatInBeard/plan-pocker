@@ -26,6 +26,12 @@ const CardPicker = ({selectedCard, availableCards = [], allowCustom = false, sel
 
     return (
         <div className="row justify-content-center mt-5">
+            <div 
+                className={`${style.card} ${selectedCard === -1 ? style.selected : ''}`}
+                onClick={() => handleCardSelect(-1)}
+            >
+                <i className="bi bi-eye-fill"></i>
+            </div>
             {availableCards.map((value, index) => {
                 return (
                     <div 

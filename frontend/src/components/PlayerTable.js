@@ -75,7 +75,7 @@ const PlayerTable = ({ voters,revealedValue, revealAction, startNewAction }) => 
                     }}
                 >
                     <div className='top-text'><h5>{voter.userName}</h5></div>
-                    <div className={voter.vote > 0 && revealedValue == 0 ? 'card closed' : 'card ' }>
+                    {voter.vote >= 0 && <div className={voter.vote > 0 && revealedValue == 0 ? 'card closed' : 'card ' }>
                         {voter.vote == 0 && revealedValue == 0 ? (
                             <span><i className="bi bi-patch-question-fill"></i></span>
                         ) : voter.vote > 0 && revealedValue == 0 ? (
@@ -83,7 +83,12 @@ const PlayerTable = ({ voters,revealedValue, revealAction, startNewAction }) => 
                         ) : (
                             <span>{voter.vote}</span>
                         )}
-                    </div>
+                    </div> }
+                    {voter.vote <0 && 
+                        <div className={"card"}>
+                            <span><i className="bi bi-eye-fill"></i></span>
+                        </div>
+                    }
                 </div>
             ))}
         </div>
