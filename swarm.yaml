@@ -28,7 +28,7 @@ services:
       REDIS_PORT: 6379
       REDIS_HOST: valkey
       GAME_STATUS_CACHE_TIMEOUT: 1
-      STAY_CONNECTED_PLAYER: 5
+      STAY_CONNECTED_PLAYER: 60
     deploy:
       replicas: 1
       restart_policy:
