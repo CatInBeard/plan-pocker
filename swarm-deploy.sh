@@ -34,6 +34,17 @@ fi
 
 export $(grep -v '^#' "$ENV_FILE" | xargs)
 
+if [ "$TAG" == "git" ]; then
+    if command -v git >/dev/null 2>&1; then
+        COMMIT_HASH=$(git rev-parse --short HEAD)
+        export TAG=$COMMIT_HASH
+        echo "Used git as tag: ${TAG}"
+    else
+        echo "Error: git is not available. Please ensure git is installed and accessible in PATH."
+        exit 1
+    fi
+fi
+
 case $COMMAND in
     up)
         if [ -z "$SERVICE_NAME" ]; then

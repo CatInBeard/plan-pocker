@@ -1,6 +1,6 @@
 services:
   frontend:
-    image: plan-pocker-frontend
+    image: ${PREFIX}-frontend${POSTFIX}:${TAG}
     networks:
       - internal
     deploy:
@@ -11,7 +11,7 @@ services:
       - ./cloud/data/nginx-frontend:/var/log/nginx
 
   websocket-server:
-    image: plan-pocker-websocket-server
+    image: ${PREFIX}-websocket-server${POSTFIX}:${TAG}
     volumes:
       - ./cloud/data/logs:/logs
     networks:
@@ -35,7 +35,7 @@ services:
         condition: on-failure
 
   game:
-    image: plan-pocker-game
+    image: ${PREFIX}-game${POSTFIX}:${TAG}
     volumes:
       - ./cloud/data/logs:/logs
     networks:
@@ -59,7 +59,7 @@ services:
         condition: on-failure
 
   api-server:
-    image: plan-pocker-api-server
+    image: ${PREFIX}-api-server${POSTFIX}:${TAG}
     volumes:
       - ./cloud/data/logs:/logs
     networks:
@@ -122,7 +122,7 @@ services:
         condition: on-failure
 
   nginx:
-    image: plan-pocker-nginx
+    image: ${PREFIX}-nginx${POSTFIX}:${TAG}
     ports:
       - target: 80
         published: ${APPLICATION_PORT}
@@ -137,8 +137,6 @@ services:
     environment:
       - BASIC_USERNAME=${HTTP_ADMIN_USERNAME}
       - BASIC_PASSWORD=${HTTP_ADMIN_PASSWORD}
-    command: >
-      sh -c "printf '$BASIC_USERNAME:$(openssl passwd -1 $BASIC_PASSWORD)\n' >> /etc/nginx/.htpasswd && /docker-entrypoint.sh nginx -g 'daemon off;'"
     volumes:
       - ./cloud/data/nginx:/var/log/nginx
     deploy:
@@ -160,7 +158,7 @@ services:
     networks:
       - internal
     deploy:
-      replicas: 0 # Use docker service scale flyway=1 to run migrate
+      replicas: 1
       restart_policy:
         condition: none
 
@@ -175,7 +173,7 @@ services:
     volumes:
       - ./cloud/data/redisinsight:/db
     deploy:
-      replicas: 0 # Use docker service scale redisinsight=1 if necessary
+      replicas: 1
       restart_policy:
         condition: none
 
