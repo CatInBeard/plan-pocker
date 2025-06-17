@@ -59,8 +59,12 @@ To deploy the application in Docker Swarm, follow these steps:
    ```
     cp cloud/test.env /path/to/file.env
    ```
+4. **Export environment**  
+   ```
+    export $(grep -v '^#' path/to/file.env | xargs)
+   ```
 
-4. **Deploy the Application**  
+5. **Deploy the Application**  
    After that, run the script to deploy the application, specifying the path to your environment file:
    ```
     ./swarm-deploy.sh up envfile=/path/to/file.env
