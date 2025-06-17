@@ -1,15 +1,22 @@
 #!/bin/bash
 
 if [ "$#" -lt 1 ]; then
-    echo "Usage: $0 <command> [service_name] [replicas] [envfile=./cloud/test.env] [stackname=plan-pocker]"
-    echo "Commands: up, down, scale"
+    echo "Usage: $0 <command> [envfile=./cloud/test.env] [stackname=plan-pocker]"
+    echo ""
+    echo "Commands:"
+    echo "  up    [service_name]            - Start the services. Can be used without parameters or with [service_name]."
+    echo "  down  [service_name]            - Stop the services. Can be used without parameters or with [service_name]."
+    echo "  scale <service_name> <replicas> - Scale a service. Requires [service_name] and [replicas]."
+    echo ""
+    echo "Notes:"
+    echo "  - If [envfile] is not specified, environment variables will not be exported."
+    echo "  - [stackname] is optional and defaults to 'plan-pocker'."
     exit 1
 fi
 
 COMMAND=$1
 SERVICE_NAME=$2
 REPLICAS=$3
-ENV_FILE="cloud/test.env"
 STACK_NAME="plan-pocker"
 
 mkdir -p cloud/data/logs
@@ -27,12 +34,14 @@ for arg in "$@"; do
     fi
 done
 
-if [ ! -f "$ENV_FILE" ]; then
-    echo "Environment file $ENV_FILE not found!"
-    exit 1
-fi
+if [ -n "$ENV_FILE" ]; then
+    if [ ! -f "$ENV_FILE" ]; then
+        echo "Environment file $ENV_FILE not found!"
+        exit 1
+    fi
 
-export $(grep -v '^#' "$ENV_FILE" | xargs)
+    export $(grep -v '^#' "$ENV_FILE" | xargs)
+fi
 
 if [ "$TAG" == "git" ]; then
     if command -v git >/dev/null 2>&1; then
