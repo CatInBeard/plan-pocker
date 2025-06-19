@@ -11,6 +11,10 @@ class WsClient {
     }
 
     send(message){
+        if (this.socket.readyState > 1) {
+            console.log("Connection closed, try to reconnect")
+            this.socketConnect()
+        }
         this.socket.send(JSON.stringify(message))
     }
 
@@ -42,6 +46,10 @@ class WsClient {
                 console.log("Try to reconnect")
             }, 1000)
         });
+
+        this.socket.onerror = function(event) {
+            console.error("Ws error:", event);
+        };
     }
 
 }
