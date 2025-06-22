@@ -172,6 +172,8 @@ services:
       - internal
     environment:
       - RI_PROXY_PATH=/admin/redis/
+      - RI_DATABASE_MANAGEMENT=false
+      - RI_REDIS_HOST=valkey
     volumes:
         - ./local/data/redisinsight:/db
 
