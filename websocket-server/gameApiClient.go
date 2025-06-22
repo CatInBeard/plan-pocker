@@ -80,7 +80,7 @@ func SendConnectRequest(cr ConnectionRequest) error {
 		return errors.New("Received " + resp.Status + "status")
 	}
 	body, _ := io.ReadAll(resp.Body)
-	logger.Log(logger.DEBUG, "[GAC-010] send ConnectionRequest", fmt.Sprintf("Request: %s, Response: %s", jsonData, body))
+	logger.Log(logger.DEBUG, "[GAC-010] send ConnectionRequest", fmt.Sprintf("Request: %s, Response: %s", jsonData, body), logger.Label{Key: "UserUID", Value: cr.UID})
 
 	return nil
 }
