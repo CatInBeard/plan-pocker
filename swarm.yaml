@@ -81,7 +81,7 @@ services:
         condition: on-failure
 
   phpmyadmin:
-    image: phpmyadmin/phpmyadmin
+    image: phpmyadmin:5.2.2-fpm-alpine
     environment:
       PMA_HOST: mysql
       PMA_USER: root
@@ -90,7 +90,7 @@ services:
       - internal
 
     deploy:
-      replicas: 0 # Use docker service scale phpmyadmin=1 if necessary
+      replicas: 1
       restart_policy:
         condition: none
 

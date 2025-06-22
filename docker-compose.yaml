@@ -92,7 +92,7 @@ services:
       depends_on:
       - game
   phpmyadmin:
-    image: phpmyadmin/phpmyadmin
+    image: phpmyadmin:5.2.2-fpm-alpine
     ports:
       - "80:80" 
     environment:
