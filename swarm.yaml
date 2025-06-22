@@ -176,6 +176,31 @@ services:
       replicas: 1
       restart_policy:
         condition: none
+  grafana:
+    image: ${PREFIX}-grafana${POSTFIX}:${TAG}
+    depends_on:
+      - loki
+    networks:
+      - internal
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_AUTH_DISABLE_LOGIN_FORM=true
+      - GF_AUTH_DISABLE_SIGNOUT_MENU=true
+      - GF_AUTH_ANONYMOUS_ENABLED=true
+      - GF_AUTH_ANONYMOUS_ORG_ROLE=Admin
+      - GF_SERVER_ROOT_URL=/admin/grafana/
+    volumes:
+      - grafana:/var/lib/grafana
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: none
+  loki:
+    image: ${PREFIX}-loki${POSTFIX}:${TAG}
+    networks:
+      - internal
+    volumes:
+      - loki:/loki/data
 
 networks:
   internal:
@@ -183,3 +208,9 @@ networks:
     internal: true
   external:
     driver: overlay
+
+volumes:
+  grafana:
+    driver: local
+  loki:
+    driver: local

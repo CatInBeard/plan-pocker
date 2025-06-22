@@ -39,10 +39,12 @@ docker build -t "${PREFIX}-frontend${POSTFIX}:${TAG}"         -f ./cloud/fronten
 docker build -t "${PREFIX}-game${POSTFIX}:${TAG}"             -f ./cloud/game/Dockerfile             .
 docker build -t "${PREFIX}-api-server${POSTFIX}:${TAG}"       -f ./cloud/api-server/Dockerfile       .
 docker build -t "${PREFIX}-nginx${POSTFIX}:${TAG}"            -f ./cloud/nginx/Dockerfile            ./cloud/nginx/
+docker build -t "${PREFIX}-grafana${POSTFIX}:${TAG}"          -f ./cloud/grafana/Dockerfile          ./cloud/grafana/
+docker build -t "${PREFIX}-loki${POSTFIX}:${TAG}"             -f ./cloud/loki/Dockerfile             ./cloud/loki/
 
 
 if [ "$TAG" != "latest" ]; then
-    for SERVICE in websocket-server frontend game api-server nginx; do
+    for SERVICE in websocket-server frontend game api-server nginx grafana loki; do
         docker tag "${PREFIX}-${SERVICE}${CONTAINER_NAME_SUFFIX}:${TAG}" "${PREFIX}-${SERVICE}${CONTAINER_NAME_SUFFIX}:latest"
     done;
 fi

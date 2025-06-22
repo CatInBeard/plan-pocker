@@ -116,7 +116,7 @@ func main() {
 
 	http.HandleFunc("/", manager.handleConnections)
 	go SubscribeGameUpdates(manager.SendGameNotify)
-	logger.Log(logger.INFO, "[WS-001] Http server started", "Http server started on Port "+port)
+	logger.Log(logger.INFO, "[WS-001] Http server started", "Http server started on Port "+port, logger.Label{Key: "test", Value: "test"})
 
 	err := http.ListenAndServe(":"+port, nil)
 	if err != nil {

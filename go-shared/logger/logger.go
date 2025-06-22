@@ -41,13 +41,19 @@ func LogLevelFromString(level string) LogLevel {
 }
 
 type LogEntry struct {
-	Time      time.Time
-	File      string
-	Line      int
-	Level     LogLevel
-	Header    string
-	Body      string
-	Container string
+	Time             time.Time
+	File             string
+	Line             int
+	Level            LogLevel
+	Header           string
+	Body             string
+	Container        string
+	AdditionalLabels []Label
+}
+
+type Label struct {
+	Key   string
+	Value string
 }
 
 var Logger *log.Logger
@@ -55,8 +61,19 @@ var logChannel chan LogEntry
 var containerName string
 var minLogLevel LogLevel
 var fileInfoLogLevel LogLevel
+var lokiURL string
+var lokiUsername string
+var lokiPassword string
+var lokiCooldown time.Time
+var duplicateLogs bool
 
 func init() {
+
+	lokiURL = os.Getenv("LOKI_URL")
+	lokiUsername = os.Getenv("LOKI_USERNAME")
+	lokiPassword = os.Getenv("LOKI_PASSWORD")
+	duplicateLogs = os.Getenv("DUPLICATE_LOGS") == "ON"
+
 	logDir := os.Getenv("LOG_DIR")
 	file, err := os.OpenFile(logDir+"/"+getContainerName()+".log", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
 	if err != nil {
@@ -84,6 +101,25 @@ func getContainerName() string {
 
 func processLogs() {
 	for entry := range logChannel {
+		if time.Since(lokiCooldown) > 5*time.Second {
+			err := SendToLoki(entry)
+			if err != nil {
+				lokiCooldown = time.Now()
+				Logger.Printf(
+					"[%s] [%s:%d] [%s] [%s] %s: %s\n",
+					entry.Time.Format(time.RFC3339),
+					"logger.go",
+					0,
+					"ERROR",
+					entry.Container,
+					"Failed to send log to Loki",
+					err.Error(),
+				)
+			} else if !duplicateLogs {
+				continue
+			}
+
+		}
 		if entry.Level >= minLogLevel {
 			Logger.Printf(
 				"[%s] [%s:%d] [%s] [%s] %s: %s\n",
@@ -98,13 +134,14 @@ func processLogs() {
 	}
 }
 
-func Log(level LogLevel, header, body string) {
+func Log(level LogLevel, header, body string, details ...Label) {
 	entry := LogEntry{
-		Time:      time.Now(),
-		Level:     level,
-		Header:    header,
-		Body:      body,
-		Container: getContainerName(),
+		Time:             time.Now(),
+		Level:            level,
+		Header:           header,
+		Body:             body,
+		Container:        getContainerName(),
+		AdditionalLabels: details,
 	}
 
 	if level >= fileInfoLogLevel {

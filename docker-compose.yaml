@@ -38,6 +38,8 @@ services:
     - REDIS_HOST=valkey
     - GAME_STATUS_CACHE_TIMEOUT=1
     - STAY_CONNECTED_PLAYER=5
+    - LOKI_URL=http://loki:3100
+    - DUPLICATE_LOGS=OFF
   game:
     build: 
       context: .
@@ -64,6 +66,8 @@ services:
     - DB_PRIMARY_NAME=${MYSQL_DATABASE}
     - DB_PRIMARY_USER=root
     - DB_PRIMARY_PASSWORD=${MYSQL_ROOT_PASSWORD}
+    - LOKI_URL=http://loki:3100
+    - DUPLICATE_LOGS=ON
   api-server:
       build: 
         context: .
@@ -83,6 +87,8 @@ services:
       - LOG_DIR=/logs
       - CONTAINER_NAME=api-server
       - GAME_SERVICE_BASE_URL=http://game:8082
+      - LOKI_URL=http://loki:3100
+      - DUPLICATE_LOGS=ON
       depends_on:
       - game
   phpmyadmin:
@@ -168,7 +174,34 @@ services:
       - RI_PROXY_PATH=/admin/redis/
     volumes:
         - ./local/data/redisinsight:/db
-    
+
+  loki:
+    build:
+      context: ./local/loki
+      dockerfile: Dockerfile
+    networks:
+      - internal
+    volumes:
+      - loki:/loki/data
+
+  grafana:
+    build:
+      context: ./local/grafana
+      dockerfile: Dockerfile
+    depends_on:
+      - loki
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_AUTH_DISABLE_LOGIN_FORM=true
+      - GF_AUTH_DISABLE_SIGNOUT_MENU=true
+      - GF_AUTH_ANONYMOUS_ENABLED=true
+      - GF_AUTH_ANONYMOUS_ORG_ROLE=Admin
+      - GF_SERVER_ROOT_URL=/admin/grafana/
+    networks:
+      - internal
+      - external
+    volumes:
+      - grafana:/var/lib/grafana
 
 networks:
   internal:
@@ -176,4 +209,8 @@ networks:
     internal: true
   external:
     driver: bridge
-
+volumes:
+  grafana: 
+    driver: local
+  loki:
+    driver: local

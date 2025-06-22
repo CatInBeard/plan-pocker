@@ -1,0 +1,31 @@
+auth_enabled: false
+
+server:
+  http_listen_port: 3100
+
+ingester:
+  wal:
+    enabled: true
+    dir: /loki/wal
+
+  chunk_idle_period: 5m
+  chunk_retain_period: 30s
+  max_chunk_size: 1048576
+  max_transfer_retries: 3
+
+schema_config:
+  configs:
+    - from: 2025-06-01
+      store: boltdb-shipper
+      object_store: s3
+      schema: v11
+      index:
+        prefix: loki_index_
+        period: 24h
+
+storage_config:
+  boltdb-shipper:
+    active_index_directory: /loki/index
+    shared_store: filesystem
+  filesystem:
+    directory: /loki/chunks
