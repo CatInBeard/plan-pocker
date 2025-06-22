@@ -29,6 +29,7 @@ services:
       REDIS_HOST: valkey
       GAME_STATUS_CACHE_TIMEOUT: 1
       STAY_CONNECTED_PLAYER: 60
+      LOKI_URL: "http://loki:3100"
     deploy:
       replicas: 1
       restart_policy:
@@ -53,6 +54,7 @@ services:
       DB_PRIMARY_NAME: ${MYSQL_DATABASE}
       DB_PRIMARY_USER: root
       DB_PRIMARY_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      LOKI_URL: "http://loki:3100"
     deploy:
       replicas: 1
       restart_policy:
@@ -70,6 +72,7 @@ services:
       LOG_DIR: /logs
       CONTAINER_NAME: api-server
       GAME_SERVICE_BASE_URL: http://game:8082
+      LOKI_URL: "http://loki:3100"
     depends_on:
       - game
     deploy:
